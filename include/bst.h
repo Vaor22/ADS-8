@@ -2,4 +2,75 @@
 #ifndef INCLUDE_BST_H_
 #define INCLUDE_BST_H_
 
+#include <vector>
+#include <utility>
+#include <string>
+
+template<typename T>
+class BST {
+ private:
+  struct Node {
+    T    key;
+    int  count;
+    Node *left, *right;
+    explicit Node(const T& k)
+        : key(k), count(1), left(nullptr), right(nullptr) {}
+  };
+  Node* root;
+
+  Node* insert(Node* node, const T& val) {
+    if (!node) return new Node(val);
+    if (val < node->key)
+      node->left  = insert(node->left,  val);
+    else if (val > node->key)
+      node->right = insert(node->right, val);
+    else
+      node->count++;
+    return node;
+  }
+
+  int depth(Node* node) const {
+    if (!node) return 0;
+    int l = depth(node->left);
+    int r = depth(node->right);
+    return 1 + (l > r ? l : r);
+  }
+
+  bool search(Node* node, const T& val) const {
+    if (!node) return false;
+    if (val == node->key) return true;
+    return val < node->key ? search(node->left,  val)
+                           : search(node->right, val);
+  }
+
+  void collect(Node* node,
+               std::vector<std::pair<T, int>>& out) const {
+    if (!node) return;
+    collect(node->left, out);
+    out.push_back({node->key, node->count});
+    collect(node->right, out);
+  }
+
+  void destroy(Node* node) {
+    if (!node) return;
+    destroy(node->left);
+    destroy(node->right);
+    delete node;
+  }
+
+ public:
+  BST() : root(nullptr) {}
+  ~BST() { destroy(root); }
+
+  void insert(const T& val)       { root = insert(root, val); }
+  int  depth()              const { return depth(root); }
+  bool search(const T& val) const { return search(root, val); }
+
+  std::vector<std::pair<T, int>> getAll() const {
+    std::vector<std::pair<T, int>> out;
+    collect(root, out);
+    return out;
+  }
+};
+
 #endif  // INCLUDE_BST_H_
