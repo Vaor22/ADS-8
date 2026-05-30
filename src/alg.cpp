@@ -6,5 +6,37 @@
 #include  "bst.h"
 
 void makeTree(BST<std::string>& tree, const char* filename) {
-  // поместите сюда свой код
+  std::ifstream file(filename);
+  if (!file) {
+    return;
+  }
+  std::string word;
+  int ch;
+  while (!file.eof()) {
+    ch = file.get();
+    if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z')) {
+      word += static_cast<char>(ch | 32);
+    } else {
+      if (!word.empty()) {
+        tree.insert(word);
+        word.clear();
+      }
+    }
+  }
+  if (!word.empty()) tree.insert(word);
+  file.close();
+}
+
+void printFreq(BST<std::string>& tree) {
+  auto words = tree.getAll();
+  std::sort(words.begin(), words.end(),
+            [](const std::pair<std::string, int>& a,
+               const std::pair<std::string, int>& b) {
+              return a.second > b.second;
+            });
+  std::ofstream out("result/freq.txt");
+  for (const auto& p : words) {
+    std::cout << p.first << " " << p.second << "\n";
+    if (out) out << p.first << " " << p.second << "\n";
+  }
 }
